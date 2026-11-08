@@ -51,6 +51,6 @@ Igual que `iluvatar`: `domain` (modelos e interfaces, sin dependencias de otras 
 ## Deuda conocida (no arreglar sin pedirlo)
 
 - `iluvatar` todavía **no** consulta a Laurelin: falta cliente, configuración y decidir qué pasa con un estudiante que no existe.
-- No hay interfaz de administración, ni carga masiva (CSV), ni endpoint para leer `audit_log`, ni entrada en `deploy/compose.yaml`.
+- No hay interfaz de administración, ni carga masiva (CSV), ni endpoint para leer `audit_log`. Está en `deploy/compose.yaml` (con su propia base `laurelin-db`), validado pero no ejecutado.
 - No hay Swagger; las rutas están documentadas aquí.
 - El rate limit vive en memoria de cada réplica. Falta revisión legal de qué se guarda y por cuánto tiempo (ver `docs/PLAN_MIGRACION.md`).

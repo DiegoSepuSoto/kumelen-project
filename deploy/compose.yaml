@@ -1,4 +1,4 @@
-# Kümelen completo para desarrollo y pruebas locales: base de datos, CMS, API/BFF y PWA.
+# Kümelen completo para desarrollo y pruebas locales: base de datos, CMS, API/BFF, Laurelin (registro de estudiantes) y PWA.
 # NO es una configuración de producción (puertos abiertos en localhost, datos de prueba, sin TLS).
 # Guía y requisitos: COMPOSE.md.
 #
@@ -38,6 +38,22 @@ services:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kumelen -d kumelen"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Base de datos propia de Laurelin: dos servicios, dos bases, como en producción.
+  laurelin-db:
+    image: docker.io/library/postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: laurelin
+      POSTGRES_USER: laurelin
+      POSTGRES_PASSWORD: ${LAURELIN_DB_PASSWORD:?Falta LAURELIN_DB_PASSWORD, ejecuta ./compose-env.sh}
+    volumes:
+      - laurelin_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laurelin -d laurelin"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -136,6 +152,34 @@ services:
       - "127.0.0.1:${ILUVATAR_PORT:-8080}:8080"
     # El HEALTHCHECK de la imagen ejecuta `/iluvatar healthcheck`.
 
+  # Registro de estudiantes. Aún no tiene interfaz: se opera por API con el ID token de un administrador
+  # (ver services/laurelin/CLAUDE.md). iluvatar todavía no lo consulta.
+  laurelin:
+    image: kumelen/laurelin:local
+    build:
+      context: ../services/laurelin
+    restart: unless-stopped
+    depends_on:
+      laurelin-db:
+        condition: service_healthy
+    environment:
+      # "local" y no "production": CORS abierto sin lista y no se exige el token de servicio.
+      ENV: local
+      PORT: "8090"
+      DATABASE_URL: postgres://laurelin:${LAURELIN_DB_PASSWORD:?Falta LAURELIN_DB_PASSWORD}@laurelin-db:5432/laurelin?sslmode=disable
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?Falta FIREBASE_PROJECT_ID (usa demo-kumelen con el emulador)}
+      FIREBASE_AUTH_EMULATOR_HOST: ${FIREBASE_AUTH_EMULATOR_HOST:-}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+      # Token que presentará iluvatar (y cualquier otro servicio) en /internal/*.
+      SERVICE_TOKEN: ${LAURELIN_SERVICE_TOKEN:?Falta LAURELIN_SERVICE_TOKEN, ejecuta ./compose-env.sh}
+      # Cuenta de administración central: su correo debe estar verificado en Firebase para entrar.
+      BOOTSTRAP_ADMIN_EMAIL: ${LAURELIN_BOOTSTRAP_ADMIN_EMAIL:?Falta LAURELIN_BOOTSTRAP_ADMIN_EMAIL}
+    volumes:
+      - ./secrets:/secrets:ro
+    ports:
+      - "127.0.0.1:${LAURELIN_PORT:-8090}:8090"
+    # El HEALTHCHECK de la imagen ejecuta `/laurelin healthcheck`.
+
   pwa:
     image: kumelen/manwe-pwa:local
     build:
@@ -165,5 +209,6 @@ services:
 
 volumes:
   pgdata:
+  laurelin_pgdata:
   cms_uploads:
   shared:

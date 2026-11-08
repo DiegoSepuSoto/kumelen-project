@@ -276,7 +276,7 @@ Respuestas a las decisiones abiertas 1 a 5:
 **Pendiente de Laurelin:**
 - Que `iluvatar` consulte a Laurelin al iniciar sesión o al suscribirse, y decidir qué hace con una cuenta de Firebase cuyo correo no es de un estudiante activo (hoy cualquier cuenta de Firebase entra; ver D5 sobre la restricción de dominio).
 - Interfaz de administración (sin ella solo hay API), carga masiva por CSV y lectura de la auditoría.
-- Entrada en `deploy/compose.yaml` y verificación con un proyecto real de Firebase.
+- Verificación con un proyecto real de Firebase (la entrada en `deploy/compose.yaml` ya existe, validada pero no ejecutada).
 - Revisión legal (Ley 19.628 y 21.719): qué se guarda, por cuánto tiempo y cómo se atienden los derechos de acceso, rectificación y supresión (hoy un administrador puede borrar un registro, pero no hay un procedimiento).
 
 ## Orden y dependencias

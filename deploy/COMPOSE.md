@@ -1,6 +1,6 @@
 # Kümelen completo con Docker Compose
 
-`compose.yaml` levanta todo el sistema en tu máquina: PostgreSQL, el CMS, la API/BFF y la PWA. Es para **desarrollo y pruebas locales**, no para producción (puertos en `localhost`, datos de prueba, sin TLS).
+`compose.yaml` levanta todo el sistema en tu máquina: PostgreSQL, el CMS, la API/BFF, Laurelin (registro de estudiantes) y la PWA. Es para **desarrollo y pruebas locales**, no para producción (puertos en `localhost`, datos de prueba, sin TLS).
 
 > **Estado: escrito y validado, no ejecutado.** Ver "Qué está verificado" al final.
 
@@ -12,16 +12,18 @@
 | `cms` | Strapi 5 (`iluvatar-cms`) | http://localhost:1337 (panel en `/admin`) |
 | `cms-seed` | Tarea que corre una vez: carga datos de prueba y deja el API token en un volumen compartido | — |
 | `iluvatar` | API + BFF (Go) | http://localhost:8080 (`/swagger/index.html`) |
+| `laurelin-db` | PostgreSQL 17 propio de Laurelin (volumen `laurelin_pgdata`) | solo red interna |
+| `laurelin` | Registro de estudiantes (Go), solo API | http://localhost:8090 |
 | `pwa` | La app web (`manwe-pwa`, SvelteKit) | http://localhost:3000 |
 | `firebase-emulator` | Emulador de Firebase Auth, **solo con** `--profile emulator` | http://localhost:9099 |
 
-Orden de arranque (lo resuelve Compose): `postgres` → `cms` → `cms-seed` → `iluvatar` → `pwa`.
+Orden de arranque (lo resuelve Compose): `postgres` → `cms` → `cms-seed` → `iluvatar` → `pwa`; en paralelo, `laurelin-db` → `laurelin` (por ahora `iluvatar` no lo consulta).
 
 ## Requisitos
 
 - Docker con Compose v2 (usa `depends_on` con condiciones y perfiles). Validado con Compose 5.6.
 - Estar dentro del monorepo: el compose construye `../services/iluvatar`, `../services/iluvatar-cms` y `../apps/manwe-pwa`. Todos los comandos se ejecutan desde `deploy/`.
-- Puertos libres: 1337, 8080, 3000 (y 9099 con el emulador). Se pueden cambiar con `CMS_PORT`, `ILUVATAR_PORT`, `PWA_PORT` en `.env`.
+- Puertos libres: 1337, 8080, 8090, 3000 (y 9099 con el emulador). Se pueden cambiar con `CMS_PORT`, `ILUVATAR_PORT`, `LAURELIN_PORT`, `PWA_PORT` en `.env`.
 
 ## Primer arranque
 
@@ -62,6 +64,16 @@ docker compose down -v               # detiene y BORRA datos, imágenes subidas 
 ```
 
 Tras `down -v` el siguiente `up` vuelve a cargar los datos de prueba y genera un token nuevo. Si solo borras el volumen `shared` y conservas la base, `cms-seed` regenera el token.
+
+## Laurelin en el compose
+
+`laurelin` no tiene interfaz: se opera por API. Para probarlo con el emulador de Auth:
+
+1. Crea en el emulador una cuenta con el correo de `LAURELIN_BOOTSTRAP_ADMIN_EMAIL` (por defecto `admin@laurelin.test`) y márcala como verificada. El emulador acepta `POST http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake` y luego `POST .../v1/projects/demo-kumelen/accounts:update` con `Authorization: Bearer owner` y `{"localId": "...", "emailVerified": true}`. Vuelve a iniciar sesión (`accounts:signInWithPassword`) para obtener un ID token con el correo verificado.
+2. Llama a `http://localhost:8090/v1/me` con `Authorization: Bearer <ID token>`. El resto de las rutas están en `services/laurelin/CLAUDE.md`.
+3. La consulta que hará `iluvatar` se prueba con `POST /internal/v1/students/lookup` y `Authorization: Bearer $LAURELIN_SERVICE_TOKEN` (el valor está en `.env`).
+
+Con un proyecto real de Firebase, `LAURELIN_BOOTSTRAP_ADMIN_EMAIL` debe ser tu correo real (verificado por Google al iniciar sesión).
 
 ## Por qué hay dos direcciones para el CMS
 

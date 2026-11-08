@@ -17,7 +17,7 @@ Fuera del monorepo (repos antiguos, archivados o por archivar): `kumelen-load-te
 
 ## Levantar todo
 
-`deploy/COMPOSE.md` explica `deploy/compose.yaml` (PostgreSQL, CMS, API/BFF y PWA); `deploy/compose-env.sh` genera su `.env`. Se ejecuta desde `deploy/`. Está validado pero **no se ha ejecutado**.
+`deploy/COMPOSE.md` explica `deploy/compose.yaml` (PostgreSQL, CMS, API/BFF, Laurelin y PWA); `deploy/compose-env.sh` genera su `.env`. Se ejecuta desde `deploy/`. Está validado pero **no se ha ejecutado**.
 
 ## Flujo de datos
 
@@ -35,7 +35,7 @@ administradores --Firebase Auth + /v1/*--> laurelin
 - Fases 0 a 4 del plan hechas; el monorepo tiene un solo commit inicial en `main`, sin push. Cada repo tiene sus comandos y límites en su propio `CLAUDE.md`.
 - Verificado en local: PostgreSQL 17 en el CMS, imágenes de contenedor de ambos servicios (Podman), caché ante caída del CMS, CORS, rate limit y logs.
 - No verificado: el envío FCM y la verificación de firma de tokens contra un proyecto de Firebase real; la carga en un entorno real; no hay CI todavía.
-- Laurelin (`services/laurelin`) tiene el servicio hecho y probado (casos de uso, HTTP, PostgreSQL real, emulador de Auth, imagen), en la rama `feat/laurelin`; falta la integración con `iluvatar`, una interfaz de administración y la entrada en el compose.
+- Laurelin (`services/laurelin`) tiene el servicio hecho y probado (casos de uso, HTTP, PostgreSQL real, emulador de Auth, imagen), en la rama `feat/laurelin`; ya está en `deploy/compose.yaml` (validado, no ejecutado). Falta la integración con `iluvatar` y una interfaz de administración.
 - Pendiente de decisión: hosting, dominio y TLS; almacenamiento de imágenes del CMS; PostgreSQL gestionado con respaldos.
 - Toolchain local: Go 1.27, Node 24 vía nvm (el Node por defecto es 16 y no sirve para Strapi 5 ni para firebase-tools) y Podman (`/opt/podman/bin`; su máquina virtual puede estar detenida: `podman machine start`).
 - Los secretos van por variables de entorno; nunca escribir valores reales en archivos versionados.

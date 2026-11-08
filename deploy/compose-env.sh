@@ -21,6 +21,11 @@ TRANSFER_TOKEN_SALT=$(random)
 JWT_SECRET=$(random)
 ENCRYPTION_KEY=$(random)
 WEBHOOK_SECRET=$(random)
+LAURELIN_DB_PASSWORD=$(random | tr -d '/+=')
+LAURELIN_SERVICE_TOKEN=$(random | tr -d '/+=')
+# Primer administrador de Laurelin. Con el emulador, crea una cuenta con este correo y márcala como verificada
+# (ver COMPOSE.md); con un proyecto real, pon tu correo.
+LAURELIN_BOOTSTRAP_ADMIN_EMAIL=admin@laurelin.test
 
 # --- Firebase: elige UNA de las dos opciones ---
 # A) Emulador de Auth (sin proyecto real; el botón de Google de la PWA abre una ventana falsa del emulador):
