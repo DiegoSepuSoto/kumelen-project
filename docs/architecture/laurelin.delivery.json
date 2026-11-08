@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "54de780d-5feb-46ae-93ee-e8fe67315d46",
+  "status": "current",
+  "command": "deliver",
+  "type": "erd",
+  "input": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/fuentes/laurelin.erd.json",
+  "output": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/laurelin.html",
+  "specification": {
+    "sha256": "7e6465e29de4121011dff4711272b3b8285260ea24b4dd38752be6c8e6715e03",
+    "bytes": 5701
+  },
+  "artifact": {
+    "sha256": "9a69f7f1ad4f7eec4147785dc6e3b28b0e19c7fcb79089b2a3fcc4edf87446e3",
+    "bytes": 859575
+  }
+}

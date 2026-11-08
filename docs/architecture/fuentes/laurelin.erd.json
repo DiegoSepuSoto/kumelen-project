@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "diagram_type": "erd",
+  "meta": {
+    "title": "Laurelin: modelo de datos",
+    "output": "docs/architecture/laurelin.html",
+    "locale": "es",
+    "quality_profile": "showcase"
+  },
+  "layout": {
+    "mode": "grid",
+    "gapY": 48,
+    "gapX": 90
+  },
+  "entities": [
+    {
+      "id": "institutions",
+      "label": "institutions",
+      "tag": "catálogo",
+      "row": 0,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "key": "uk"
+        },
+        {
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "programs",
+      "label": "programs",
+      "tag": "catálogo",
+      "row": 0,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "institution_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "institutions.id"
+        },
+        {
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "name": "level",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "admins",
+      "label": "admins",
+      "tag": "personas",
+      "row": 1,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "key": "uk"
+        },
+        {
+          "name": "role",
+          "type": "text"
+        },
+        {
+          "name": "institution_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "institutions.id"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "students",
+      "label": "students",
+      "tag": "personas",
+      "row": 1,
+      "col": 1,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "institution_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "institutions.id"
+        },
+        {
+          "name": "program_id",
+          "type": "uuid",
+          "key": "fk",
+          "references": "programs.id"
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "key": "uk"
+        },
+        {
+          "name": "full_name",
+          "type": "text"
+        },
+        {
+          "name": "entry_year",
+          "type": "smallint"
+        },
+        {
+          "name": "status",
+          "type": "text"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    {
+      "id": "audit_log",
+      "label": "audit_log",
+      "tag": "auditoría",
+      "row": 2,
+      "col": 0,
+      "attributes": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "key": "pk"
+        },
+        {
+          "name": "actor_admin_id",
+          "type": "uuid"
+        },
+        {
+          "name": "action",
+          "type": "text"
+        },
+        {
+          "name": "entity_type",
+          "type": "text"
+        },
+        {
+          "name": "entity_id",
+          "type": "uuid"
+        },
+        {
+          "name": "institution_id",
+          "type": "uuid"
+        },
+        {
+          "name": "at",
+          "type": "timestamptz"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "program-institution",
+      "from": "programs",
+      "to": "institutions",
+      "fromCardinality": "many",
+      "toCardinality": "one",
+      "label": "pertenece a"
+    },
+    {
+      "id": "student-program",
+      "from": "students",
+      "to": "programs",
+      "fromCardinality": "many",
+      "toCardinality": "one",
+      "label": "cursa"
+    },
+    {
+      "id": "student-institution",
+      "from": "students",
+      "to": "institutions",
+      "fromCardinality": "many",
+      "toCardinality": "one",
+      "label": "institución"
+    },
+    {
+      "id": "admin-institution",
+      "from": "admins",
+      "to": "institutions",
+      "fromCardinality": "many",
+      "toCardinality": "one",
+      "toOptional": false,
+      "fromOptional": false,
+      "label": "administra",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Datos mínimos",
+      "items": [
+        "Un estudiante es solo correo, nombre, año de ingreso y estado",
+        "No se guarda RUT, teléfono ni dirección (Ley 21.719)",
+        "El correo va en minúsculas y es único en todo Laurelin"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Administradores",
+      "items": [
+        "super_admin: institution_id nulo y acceso a todo",
+        "institution_admin: institution_id obligatorio y solo ve su institución",
+        "programs es único por (institution_id, name, level)"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Auditoría",
+      "items": [
+        "audit_log guarda ids y acción, nunca correos ni nombres",
+        "Sin claves foráneas, para que el rastro sobreviva a los borrados"
+      ]
+    }
+  ]
+}

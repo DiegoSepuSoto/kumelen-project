@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c1f798b6-bf94-4205-a122-f4c036a85b67",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/fuentes/acceso-estudiante.sequence.json",
+  "output": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/acceso-estudiante.html",
+  "specification": {
+    "sha256": "3d381d457941cb6ccf1ab3751c652d101b97f69c2f7f1588b17d8cd895a149ed",
+    "bytes": 2700
+  },
+  "artifact": {
+    "sha256": "98b50faa39c7e0ce8254d83bb3169c0881dab2fcae66d2b798fe4071c48133b1",
+    "bytes": 837269
+  }
+}

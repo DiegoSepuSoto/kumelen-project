@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Publicación de un post y notificación push",
+    "output": "docs/architecture/publicacion-push.html",
+    "locale": "es",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    { "id": "staff", "type": "external", "label": "Colaborador", "sublabel": "Servicios Estudiantiles" },
+    { "id": "cms", "type": "backend", "label": "iluvatar-cms", "sublabel": "Strapi 5" },
+    { "id": "iluvatar", "type": "backend", "label": "iluvatar", "sublabel": "API + BFF" },
+    { "id": "fcm", "type": "cloud", "label": "Firebase FCM", "sublabel": "push v1" },
+    { "id": "pwa", "type": "frontend", "label": "Dispositivo", "sublabel": "manwe-pwa suscrita" }
+  ],
+  "segments": [
+    { "from": 140, "to": 200, "label": "Publicación" },
+    { "from": 210, "to": 330, "label": "Aviso y envío" }
+  ],
+  "messages": [
+    { "id": "publish", "from": "staff", "to": "cms", "y": 165, "label": "publica el post", "variant": "emphasis" },
+    { "id": "webhook", "from": "cms", "to": "iluvatar", "y": 235, "label": "webhook entry.publish", "variant": "security" },
+    { "id": "send", "from": "iluvatar", "to": "fcm", "y": 265, "label": "1 mensaje a los topics", "variant": "emphasis" },
+    { "id": "push", "from": "fcm", "to": "pwa", "y": 295, "label": "notificación push", "variant": "dashed" },
+    { "id": "ack", "from": "iluvatar", "to": "cms", "y": 325, "label": "200", "variant": "return" }
+  ],
+  "cards": [
+    { "dot": "rose", "title": "Webhook protegido", "items": ["Exige la cabecera X-Webhook-Secret igual a WEBHOOK_SECRET", "401 si no coincide; 503 si el servicio no la tiene configurada", "Ignora con 200 los eventos que no son la publicación de un post"] },
+    { "dot": "orange", "title": "Un solo mensaje", "items": ["Condición: 'all' in topics || 'service.<id>' in topics", "Un dispositivo suscrito a ambos lo recibe una vez", "Con PUSH_DISABLED=true no se envía nada"] }
+  ]
+}

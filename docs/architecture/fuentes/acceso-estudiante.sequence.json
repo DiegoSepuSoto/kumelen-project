@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Ingreso y verificación de estudiante activo",
+    "output": "docs/architecture/acceso-estudiante.html",
+    "locale": "es",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    { "id": "pwa", "type": "frontend", "label": "manwe-pwa", "sublabel": "SvelteKit" },
+    { "id": "auth", "type": "security", "label": "Firebase Auth", "sublabel": "ID tokens" },
+    { "id": "iluvatar", "type": "backend", "label": "iluvatar", "sublabel": "API + BFF" },
+    { "id": "laurelin", "type": "backend", "label": "laurelin", "sublabel": "registro de estudiantes" },
+    { "id": "cms", "type": "backend", "label": "iluvatar-cms", "sublabel": "Strapi 5" }
+  ],
+  "segments": [
+    { "from": 140, "to": 200, "label": "Ingreso" },
+    { "from": 210, "to": 330, "label": "Verificación" },
+    { "from": 340, "to": 430, "label": "Contenido" }
+  ],
+  "messages": [
+    { "id": "login", "from": "pwa", "to": "auth", "y": 160, "label": "ingresar con Google", "variant": "security" },
+    { "id": "id-token", "from": "auth", "to": "pwa", "y": 188, "label": "ID token", "variant": "return" },
+    { "id": "request", "from": "pwa", "to": "iluvatar", "y": 235, "label": "GET /v1/home + Bearer", "variant": "emphasis" },
+    { "id": "verify", "from": "iluvatar", "to": "auth", "y": 265, "label": "verifica el ID token", "variant": "security" },
+    { "id": "lookup", "from": "iluvatar", "to": "laurelin", "y": 295, "label": "lookup (token de servicio)", "variant": "security" },
+    { "id": "student", "from": "laurelin", "to": "iluvatar", "y": 323, "label": "is_student", "variant": "return" },
+    { "id": "content", "from": "iluvatar", "to": "cms", "y": 360, "label": "GET contenido", "variant": "default" },
+    { "id": "content-json", "from": "cms", "to": "iluvatar", "y": 388, "label": "JSON", "variant": "return" },
+    { "id": "screen", "from": "iluvatar", "to": "pwa", "y": 416, "label": "200 pantalla", "variant": "return" }
+  ],
+  "cards": [
+    { "dot": "rose", "title": "Reglas de acceso", "items": ["Cualquier fallo de token es 401", "403 si el correo no está verificado o no es de un estudiante activo", "503 si Laurelin no responde y no había verificación previa (falla cerrado)"] },
+    { "dot": "cyan", "title": "Opcional en local", "items": ["Sin LAURELIN_URL no hay verificación de estudiante", "En producción iluvatar se niega a arrancar así, salvo STUDENT_CHECK_DISABLED=true"] },
+    { "dot": "emerald", "title": "Cachés", "items": ["Estudiante 10 min, no estudiante 1 min", "Si Laurelin cae, acepta hasta 24 h a quien ya fue verificado", "Si el CMS cae, iluvatar sirve la última respuesta buena"] }
+  ]
+}

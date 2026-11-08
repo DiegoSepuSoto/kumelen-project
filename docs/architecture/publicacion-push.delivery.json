@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "4241e9cb-1256-4c04-bcbc-36646c83d3aa",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/fuentes/publicacion-push.sequence.json",
+  "output": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/publicacion-push.html",
+  "specification": {
+    "sha256": "0512a2ed993992d251d2b68c8e02e7e171eb9de04ed29178c315f7d23f59efa3",
+    "bytes": 1969
+  },
+  "artifact": {
+    "sha256": "6ec0e5ef137f6ceb5f41dcc8b04014c0a9655dafa5dbd0b74ef4a711702bbecd",
+    "bytes": 833720
+  }
+}

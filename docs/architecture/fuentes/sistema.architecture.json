@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Kümelen: arquitectura actual",
+    "subtitle": "Servicios, almacenes y dependencias externas del monorepo",
+    "output": "docs/architecture/sistema.html",
+    "locale": "es",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "student",
+      "type": "external",
+      "label": "Estudiante",
+      "sublabel": "UTEM",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "pwa",
+      "type": "frontend",
+      "label": "manwe-pwa",
+      "sublabel": "SvelteKit",
+      "pos": [
+        270,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "iluvatar",
+      "type": "backend",
+      "label": "iluvatar",
+      "sublabel": "API + BFF (Go)",
+      "pos": [
+        540,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "cms",
+      "type": "backend",
+      "label": "iluvatar-cms",
+      "sublabel": "Strapi 5",
+      "pos": [
+        830,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "cmsdb",
+      "type": "database",
+      "label": "Base del CMS",
+      "sublabel": "SQLite / PostgreSQL",
+      "pos": [
+        830,
+        440
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "laurelin",
+      "type": "backend",
+      "label": "laurelin",
+      "sublabel": "registro (Go)",
+      "pos": [
+        540,
+        520
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "laurelindb",
+      "type": "database",
+      "label": "Base de Laurelin",
+      "sublabel": "PostgreSQL 17",
+      "pos": [
+        540,
+        660
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "staff",
+      "type": "external",
+      "label": "Colaborador",
+      "sublabel": "Servicios Estudiantiles",
+      "pos": [
+        830,
+        130
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "admin",
+      "type": "external",
+      "label": "Administrador",
+      "sublabel": "de Laurelin",
+      "pos": [
+        40,
+        520
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Firebase Auth",
+      "sublabel": "ID tokens",
+      "pos": [
+        405,
+        130
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "fcm",
+      "type": "cloud",
+      "label": "Firebase FCM",
+      "sublabel": "push v1",
+      "pos": [
+        405,
+        440
+      ],
+      "size": [
+        120,
+        60
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "student-pwa",
+      "from": "student",
+      "to": "pwa",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pwa-iluvatar",
+      "from": "pwa",
+      "to": "iluvatar",
+      "label": "REST + ID token",
+      "variant": "emphasis"
+    },
+    {
+      "id": "iluvatar-cms",
+      "from": "iluvatar",
+      "to": "cms",
+      "label": "REST + API token"
+    },
+    {
+      "id": "cms-iluvatar",
+      "from": "cms",
+      "to": "iluvatar",
+      "label": "webhook publish",
+      "variant": "dashed"
+    },
+    {
+      "id": "cms-db",
+      "from": "cms",
+      "to": "cmsdb",
+      "label": "SQL"
+    },
+    {
+      "id": "staff-cms",
+      "from": "staff",
+      "to": "cms",
+      "label": "publica",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pwa-auth",
+      "from": "pwa",
+      "to": "auth",
+      "label": "login",
+      "variant": "security"
+    },
+    {
+      "id": "iluvatar-auth",
+      "from": "iluvatar",
+      "to": "auth",
+      "label": "verifica token",
+      "variant": "security"
+    },
+    {
+      "id": "iluvatar-fcm",
+      "from": "iluvatar",
+      "to": "fcm",
+      "label": "envía push",
+      "variant": "dashed"
+    },
+    {
+      "id": "fcm-pwa",
+      "from": "fcm",
+      "to": "pwa",
+      "label": "push",
+      "variant": "dashed"
+    },
+    {
+      "id": "iluvatar-laurelin",
+      "from": "iluvatar",
+      "to": "laurelin",
+      "label": "lookup estudiante",
+      "variant": "security"
+    },
+    {
+      "id": "laurelin-db",
+      "from": "laurelin",
+      "to": "laurelindb",
+      "label": "SQL"
+    },
+    {
+      "id": "admin-laurelin",
+      "from": "admin",
+      "to": "laurelin",
+      "label": "REST + ID token"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Lectura",
+      "items": [
+        "La PWA pide pantallas a iluvatar con el ID token de Firebase",
+        "iluvatar las arma leyendo el CMS con un API token de solo lectura",
+        "Si el CMS cae, sirve la última respuesta desde su caché"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Publicación y push",
+      "items": [
+        "Al publicar, el CMS avisa por webhook con X-Webhook-Secret",
+        "iluvatar envía un solo mensaje FCM por publicación",
+        "Con PUSH_DISABLED=true no se envía ninguno"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Solo estudiantes",
+      "items": [
+        "Con LAURELIN_URL, iluvatar exige correo verificado y estudiante activo",
+        "Laurelin responde sin devolver correo ni nombre",
+        "Si Laurelin cae, falla cerrado (503) salvo quien ya fue verificado"
+      ]
+    }
+  ]
+}

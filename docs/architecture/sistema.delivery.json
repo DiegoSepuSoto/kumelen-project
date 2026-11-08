@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "fb17529a-1608-4d0f-a245-6eafc622a10c",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/fuentes/sistema.architecture.json",
+  "output": "/Users/diegosepu/Development/kumelen/kumelen-project/docs/architecture/sistema.html",
+  "specification": {
+    "sha256": "bba2ec61a7109c9232fdd44126f594800d6e6e21e0633c9e5fe4f4362749ea93",
+    "bytes": 5394
+  },
+  "artifact": {
+    "sha256": "1b6b0d1f3c26b6b6fed41ba30c38fd147c64859aa7de9276ce395912fe93884d",
+    "bytes": 854578
+  }
+}
