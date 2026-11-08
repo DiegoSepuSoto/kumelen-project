@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/labstack/echo/v4"
+	"iluvatar/src/domain/models"
 	"iluvatar/src/domain/repository"
 	"log/slog"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 const (
 	bearerPrefix  = "Bearer "
 	uidContextKey = "uid"
+	identityKey   = "identity"
 )
 
 // RequireAuth exige un ID token de Firebase en la cabecera Authorization (Bearer) y deja el uid en el contexto.
@@ -31,6 +33,7 @@ func RequireAuth(verifier repository.TokenVerifier) echo.MiddlewareFunc {
 			}
 
 			c.Set(uidContextKey, identity.UID)
+			c.Set(identityKey, identity)
 			return next(c)
 		}
 	}
@@ -40,4 +43,10 @@ func RequireAuth(verifier repository.TokenVerifier) echo.MiddlewareFunc {
 func UID(c echo.Context) string {
 	uid, _ := c.Get(uidContextKey).(string)
 	return uid
+}
+
+// Identity devuelve la identidad completa (con el correo) de quien hizo la petición; nil si no pasó por RequireAuth.
+func Identity(c echo.Context) *models.Identity {
+	identity, _ := c.Get(identityKey).(*models.Identity)
+	return identity
 }

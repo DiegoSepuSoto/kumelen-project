@@ -27,6 +27,9 @@ Las variables de entorno necesarias para la ejecución del artefacto son:
 | `ILUVATAR_TOKEN` | API token de solo lectura del CMS. |
 | `ILUVATAR_TOKEN_FILE` | Alternativa a `ILUVATAR_TOKEN`: ruta de un archivo que contiene el token (secretos montados, o el que deja el seed del CMS en el compose). |
 | `CMS_PUBLIC_URL` | Dirección del CMS que ve el navegador, para las URLs de imágenes, cuando difiere de `ILUVATAR_CMS_HOST` (por ejemplo, red interna de Docker). Por defecto es `ILUVATAR_CMS_HOST`. |
+| `LAURELIN_URL` | Dirección de Laurelin (por ejemplo `http://laurelin:8090`). Con ella, las rutas `/v1/*` exigen que la cuenta tenga el correo verificado y sea un estudiante activo. Sin ella no se verifica; en producción eso exige `STUDENT_CHECK_DISABLED=true`. |
+| `LAURELIN_TOKEN` / `LAURELIN_TOKEN_FILE` | Token de servicio de Laurelin (su `SERVICE_TOKEN`). Obligatorio si hay `LAURELIN_URL`. |
+| `STUDENT_CHECK_DISABLED` | `true` acepta cualquier cuenta de Firebase en producción sin `LAURELIN_URL`. Solo para pruebas. |
 | `WEBHOOK_SECRET` | Secreto compartido con el CMS; sin él, el webhook responde 503. |
 | `CORS_ALLOWED_ORIGINS` | Orígenes web permitidos, separados por coma. En producción, sin esto no se permite ninguno. |
 | `RATE_LIMIT_RPS` | Peticiones por segundo por IP (20 por defecto; `0` lo desactiva). |

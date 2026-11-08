@@ -31,5 +31,7 @@ func (v *authVerifier) Verify(ctx context.Context, idToken string) (*models.Iden
 	if token == nil || token.UID == "" {
 		return nil, fmt.Errorf("%w: the token has no subject", repository.ErrInvalidToken)
 	}
-	return &models.Identity{UID: token.UID}, nil
+	email, _ := token.Claims["email"].(string)
+	verified, _ := token.Claims["email_verified"].(bool)
+	return &models.Identity{UID: token.UID, Email: email, EmailVerified: verified}, nil
 }

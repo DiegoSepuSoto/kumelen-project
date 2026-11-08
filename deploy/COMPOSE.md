@@ -17,7 +17,7 @@
 | `pwa` | La app web (`manwe-pwa`, SvelteKit) | http://localhost:3000 |
 | `firebase-emulator` | Emulador de Firebase Auth, **solo con** `--profile emulator` | http://localhost:9099 |
 
-Orden de arranque (lo resuelve Compose): `postgres` → `cms` → `cms-seed` → `iluvatar` → `pwa`; en paralelo, `laurelin-db` → `laurelin` (por ahora `iluvatar` no lo consulta).
+Orden de arranque (lo resuelve Compose): `postgres` → `cms` → `cms-seed` → `iluvatar` → `pwa`; `laurelin-db` → `laurelin` → `iluvatar` (`iluvatar` espera a Laurelin aunque no lo use).
 
 ## Requisitos
 
@@ -71,7 +71,17 @@ Tras `down -v` el siguiente `up` vuelve a cargar los datos de prueba y genera un
 
 1. Crea en el emulador una cuenta con el correo de `LAURELIN_BOOTSTRAP_ADMIN_EMAIL` (por defecto `admin@laurelin.test`) y márcala como verificada. El emulador acepta `POST http://localhost:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake` y luego `POST .../v1/projects/demo-kumelen/accounts:update` con `Authorization: Bearer owner` y `{"localId": "...", "emailVerified": true}`. Vuelve a iniciar sesión (`accounts:signInWithPassword`) para obtener un ID token con el correo verificado.
 2. Llama a `http://localhost:8090/v1/me` con `Authorization: Bearer <ID token>`. El resto de las rutas están en `services/laurelin/CLAUDE.md`.
-3. La consulta que hará `iluvatar` se prueba con `POST /internal/v1/students/lookup` y `Authorization: Bearer $LAURELIN_SERVICE_TOKEN` (el valor está en `.env`).
+3. La consulta que hace `iluvatar` se prueba con `POST /internal/v1/students/lookup` y `Authorization: Bearer $LAURELIN_SERVICE_TOKEN` (el valor está en `.env`).
+
+### Exigir que quien entra sea estudiante
+
+Por defecto `iluvatar` **no** consulta a Laurelin: entra cualquier cuenta de Firebase con token válido (así funciona la PWA con el emulador sin cargar datos). Para exigir que sea un estudiante activo:
+
+1. Con el administrador de arriba, crea una institución, un programa y el estudiante cuyo correo usarás para entrar (`POST /v1/institutions`, `/v1/institutions/:id/programs` y `/v1/students`).
+2. En `.env` agrega `ILUVATAR_LAURELIN_URL=http://laurelin:8090` y reinicia `iluvatar` (`docker compose up -d iluvatar`).
+3. Desde ese momento las rutas `/v1/*` de `iluvatar` responden 403 si la cuenta no tiene el correo verificado o no es un estudiante activo, y 503 si Laurelin no responde y esa persona no había sido verificada antes. Las respuestas se guardan 10 minutos (1 minuto si no es estudiante) y, si Laurelin cae, quien ya fue verificado sigue entrando hasta 24 horas.
+
+El botón de Google de la PWA con el emulador crea cuentas con el correo sin verificar: contra Laurelin necesitan un proyecto real de Firebase (opción B) o cuentas verificadas en el emulador.
 
 Con un proyecto real de Firebase, `LAURELIN_BOOTSTRAP_ADMIN_EMAIL` debe ser tu correo real (verificado por Google al iniciar sesión).
 

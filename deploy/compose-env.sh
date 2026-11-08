@@ -43,6 +43,10 @@ PUBLIC_FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
 #    PUBLIC_FIREBASE_API_KEY=...  PUBLIC_FIREBASE_AUTH_DOMAIN=...  PUBLIC_FIREBASE_PROJECT_ID=...
 #    PUBLIC_FIREBASE_APP_ID=...   PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 
+# Solo estudiantes activos de Laurelin pueden usar la API (iluvatar). Descomenta para activarlo; antes hay que
+# registrar a los usuarios como estudiantes en Laurelin (ver COMPOSE.md). Sin esto entra cualquier cuenta de Firebase.
+# ILUVATAR_LAURELIN_URL=http://laurelin:8090
+
 # Notificaciones push reales (solo con un proyecto real y su cuenta de servicio): PUSH_DISABLED=false
 PUSH_DISABLED=true
 ENV

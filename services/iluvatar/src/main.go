@@ -28,6 +28,7 @@ import (
 	pushHandler "iluvatar/src/infrastructure/http/handlers/rest/v1/push"
 	serviceHandler "iluvatar/src/infrastructure/http/handlers/rest/v1/service"
 	"iluvatar/src/infrastructure/http/server"
+	"iluvatar/src/infrastructure/laurelin"
 	"iluvatar/src/infrastructure/strapi"
 	"iluvatar/src/shared/validations"
 	"log/slog"
@@ -94,6 +95,13 @@ func run(ctx context.Context, config server.Config, logger *slog.Logger, port st
 	health.NewHealthHandler(e, health.Check{Name: "cms", Run: cmsClient.Ping})
 
 	authMiddleware := customMiddlewares.RequireAuth(firebaseAdapter.NewAuthVerifier(authClient))
+	studentGate, err := newStudentGate(config)
+	if err != nil {
+		return err
+	}
+	if studentGate != nil {
+		authMiddleware = chain(authMiddleware, studentGate)
+	}
 	pushUseCaseImpl := pushUseCase.NewPushNotificationUseCase(pushRepository)
 
 	_ = hooksHandler.NewHooksHandler(e, pushUseCaseImpl)
@@ -142,20 +150,61 @@ func newCMSClient() *strapi.Client {
 
 // cmsToken devuelve el API token del CMS: ILUVATAR_TOKEN o, si no está, el contenido del archivo
 // ILUVATAR_TOKEN_FILE (secretos montados, o el token que escribe el seed del CMS en desarrollo).
-func cmsToken() string {
-	if token := strings.TrimSpace(os.Getenv("ILUVATAR_TOKEN")); token != "" {
-		return token
+func cmsToken() string { return secretFromEnv("ILUVATAR_TOKEN") }
+
+// secretFromEnv devuelve el valor de la variable name o, si está vacía, el contenido del archivo que indica name+"_FILE".
+func secretFromEnv(name string) string {
+	if value := strings.TrimSpace(os.Getenv(name)); value != "" {
+		return value
 	}
-	path := os.Getenv("ILUVATAR_TOKEN_FILE")
+	path := os.Getenv(name + "_FILE")
 	if path == "" {
 		return ""
 	}
 	content, err := os.ReadFile(path)
 	if err != nil {
-		slog.Error("can't read the CMS token file", "error", err.Error())
+		slog.Error("can't read the secret file", "variable", name+"_FILE", "error", err.Error())
 		return ""
 	}
 	return strings.TrimSpace(string(content))
+}
+
+// newStudentGate crea la verificación de que quien entra es un estudiante activo (Laurelin).
+// Con LAURELIN_URL la activa; LAURELIN_TOKEN (o LAURELIN_TOKEN_FILE) es el token de servicio.
+// Sin LAURELIN_URL cualquier cuenta de Firebase con token válido entra, así que en producción eso exige
+// STUDENT_CHECK_DISABLED=true de forma explícita. Devuelve nil cuando la verificación está desactivada.
+func newStudentGate(config server.Config) (echo.MiddlewareFunc, error) {
+	url := strings.TrimSpace(os.Getenv("LAURELIN_URL"))
+	if url == "" {
+		if config.Production() && !parseBool(os.Getenv("STUDENT_CHECK_DISABLED")) {
+			return nil, errors.New("LAURELIN_URL is required in production (or set STUDENT_CHECK_DISABLED=true to accept any Firebase account)")
+		}
+		slog.Warn("student verification is disabled: any valid Firebase account can use the API")
+		return nil, nil
+	}
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		return nil, errors.New("LAURELIN_URL must start with http:// or https://")
+	}
+	token := secretFromEnv("LAURELIN_TOKEN")
+	if token == "" {
+		return nil, errors.New("LAURELIN_TOKEN (or LAURELIN_TOKEN_FILE) is required when LAURELIN_URL is set")
+	}
+
+	// Un estudiante verificado vale 10 minutos; uno desconocido, 1 minuto (un alta nueva se nota pronto);
+	// si Laurelin cae, quien ya fue verificado sigue entrando hasta 24 horas.
+	directory := laurelin.NewClient(url, token, &http.Client{Timeout: 10 * time.Second},
+		laurelin.WithCache(10*time.Minute, time.Minute, 24*time.Hour, 20000))
+	return customMiddlewares.RequireStudent(directory), nil
+}
+
+// chain aplica los middlewares en orden: el primero se ejecuta antes.
+func chain(first echo.MiddlewareFunc, rest ...echo.MiddlewareFunc) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		for i := len(rest) - 1; i >= 0; i-- {
+			next = rest[i](next)
+		}
+		return first(next)
+	}
 }
 
 func listenPort() string {

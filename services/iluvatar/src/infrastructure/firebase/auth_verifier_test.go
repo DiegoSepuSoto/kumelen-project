@@ -31,6 +31,25 @@ func TestVerify(t *testing.T) {
 		}
 	})
 
+	t.Run("returns the email and whether it is verified", func(t *testing.T) {
+		tests := map[string]struct {
+			claims       map[string]any
+			wantEmail    string
+			wantVerified bool
+		}{
+			"verified":    {map[string]any{"email": "a@utem.cl", "email_verified": true}, "a@utem.cl", true},
+			"unverified":  {map[string]any{"email": "a@utem.cl", "email_verified": false}, "a@utem.cl", false},
+			"no claims":   {nil, "", false},
+			"wrong types": {map[string]any{"email": 5, "email_verified": "yes"}, "", false},
+		}
+		for name, tt := range tests {
+			identity, err := NewAuthVerifier(&fakeIDTokenClient{token: &auth.Token{UID: "u", Claims: tt.claims}}).Verify(context.Background(), "x")
+			if err != nil || identity.Email != tt.wantEmail || identity.EmailVerified != tt.wantVerified {
+				t.Errorf("%s: got (%+v, %v)", name, identity, err)
+			}
+		}
+	})
+
 	failures := map[string]*fakeIDTokenClient{
 		"firebase rejects the token": {err: errors.New("ID token has expired")},
 		"token without subject":      {token: &auth.Token{}},
