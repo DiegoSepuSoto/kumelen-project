@@ -1,0 +1,40 @@
+@startuml iluvatar
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+
+Person(serviceCollaborator, "Colaborador", "Servicios Estudiantiles UTEM")
+
+Enterprise_Boundary(UTEMBoundary, "UTEM") {
+    System_Boundary(kumelenBoundary, "Sistema Kümelen") {
+        Container_Boundary(iluvatar, "Generación de Publicaciones") {
+            Component(postScreen, "Publicación", "Pantalla", "Pantalla donde agregar o editar una publicación")
+            Component(postsScreen, "Publicaciones", "Pantalla", "Listado de publicaciones creadas")
+            Component(serviceScreen, "Servicio Estudiantil", "Pantalla", "Pantalla donde editar información del servicio estudiantil")
+            Component(categoryScreen, "Categoría", "Pantalla", "Pantalla donde agregar o editar una categoría")
+            Component(categoriesScreen, "Categorías", "Pantalla", "Listado de categorías creadas")
+
+            Component(postsEndpoint, "Publicaciones", "Endpoint", "Servicio que lista, añade o actualiza publicaciones")
+            Component(categoriesEndpoint, "Categorias", "Endpoint", "Servicio que lista, añade o actualiza categorias")
+            Component(servicesEndpoint, "Servicios", "Endpoint", "Servicio que lista, añade o actualiza servicios estudiantiles")
+        }
+        
+        ContainerDb(ainulindale, "Base de Datos de Contenido", "Base de Datos", "Almacena las preferencias y contenido del proyecto")
+    }
+}
+
+Rel_R(serviceCollaborator, iluvatar, "Crea o actualiza")
+
+Rel(postsScreen, postsEndpoint, "Solicita listado")
+Rel(postScreen, postsEndpoint, "Envía o actualiza")
+Rel(serviceScreen, servicesEndpoint, "Actualiza")
+Rel(categoryScreen, categoriesEndpoint, "Envía o actualiza")
+Rel(categoriesScreen, categoriesEndpoint, "Solicita listado")
+
+Rel(postsEndpoint, ainulindale, "Solicita, envía o actualiza")
+Rel(categoriesEndpoint, ainulindale, "Solicita, envía o actualiza")
+Rel(servicesEndpoint, ainulindale, "Solicita, envía o actualiza")
+
+@enduml

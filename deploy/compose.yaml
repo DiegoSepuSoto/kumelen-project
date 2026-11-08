@@ -1,0 +1,169 @@
+# Kümelen completo para desarrollo y pruebas locales: base de datos, CMS, API/BFF y PWA.
+# NO es una configuración de producción (puertos abiertos en localhost, datos de prueba, sin TLS).
+# Guía y requisitos: COMPOSE.md.
+#
+#   ./compose-env.sh                        # crea .env con secretos aleatorios (una vez)
+#   docker compose up --build               # con un proyecto de Firebase real
+#   docker compose --profile emulator up --build   # con el emulador de Firebase Auth (sin proyecto real)
+name: kumelen
+
+x-cms-database: &cms-database
+  DATABASE_CLIENT: postgres
+  DATABASE_HOST: postgres
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: kumelen
+  DATABASE_USERNAME: kumelen
+  DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD, ejecuta ./compose-env.sh}
+
+x-cms-secrets: &cms-secrets
+  APP_KEYS: ${APP_KEYS:?Falta APP_KEYS, ejecuta ./compose-env.sh}
+  API_TOKEN_SALT: ${API_TOKEN_SALT:?Falta API_TOKEN_SALT}
+  ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:?Falta ADMIN_JWT_SECRET}
+  TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT:?Falta TRANSFER_TOKEN_SALT}
+  JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Falta ENCRYPTION_KEY}
+  WEBHOOK_SECRET: ${WEBHOOK_SECRET:?Falta WEBHOOK_SECRET}
+  # Strapi avisa a iluvatar cada vez que se publica contenido.
+  ILUVATAR_WEBHOOK_URL: http://iluvatar:8080/v1/hooks/post
+
+services:
+  postgres:
+    image: docker.io/library/postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kumelen
+      POSTGRES_USER: kumelen
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD, ejecuta ./compose-env.sh}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kumelen -d kumelen"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  cms:
+    image: kumelen/iluvatar-cms:local
+    build:
+      context: ../services/iluvatar-cms
+      args:
+        # Vacío = valor de Strapi (cookies seguras). Ver COMPOSE.md si el panel no deja iniciar sesión por HTTP.
+        ADMIN_COOKIE_SECURE: ${ADMIN_COOKIE_SECURE:-}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: [*cms-database, *cms-secrets]
+      NODE_ENV: production
+      PUBLIC_URL: http://localhost:${CMS_PORT:-1337}
+      ADMIN_COOKIE_SECURE: ${ADMIN_COOKIE_SECURE:-}
+    volumes:
+      - cms_uploads:/app/public/uploads
+    ports:
+      - "127.0.0.1:${CMS_PORT:-1337}:1337"
+    # El HEALTHCHECK de la imagen consulta /_health.
+
+  # Carga datos de prueba y deja el API token de solo lectura en el volumen compartido para iluvatar.
+  # Es idempotente: si ya hay datos y el token existe, no cambia nada.
+  cms-seed:
+    image: kumelen/iluvatar-cms:local
+    pull_policy: never
+    depends_on:
+      cms:
+        condition: service_healthy
+    restart: "no"
+    command: ["node", "scripts/seed.js"]
+    environment:
+      <<: [*cms-database, *cms-secrets]
+      # El seed se niega a correr con NODE_ENV=production a propósito: solo existe para desarrollo.
+      NODE_ENV: development
+      SEED_TOKEN_FILE: /shared/iluvatar_token
+    volumes:
+      - cms_uploads:/app/public/uploads
+      - shared:/shared
+
+  # Solo con --profile emulator: reemplaza a Firebase Auth para probar la API sin un proyecto real.
+  # El emulador no firma los tokens: solo sirve para desarrollo.
+  firebase-emulator:
+    profiles: ["emulator"]
+    image: docker.io/library/node:24-slim
+    working_dir: /work
+    command: ["npx", "--yes", "firebase-tools@15.35.0", "emulators:start", "--only", "auth", "--project", "demo-kumelen", "--config", "/config/firebase.json"]
+    volumes:
+      - ./firebase:/config:ro
+    ports:
+      - "127.0.0.1:9099:9099"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9099').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  iluvatar:
+    image: kumelen/iluvatar:local
+    build:
+      context: ../services/iluvatar
+    restart: unless-stopped
+    depends_on:
+      cms:
+        condition: service_healthy
+      cms-seed:
+        condition: service_completed_successfully
+    environment:
+      # "local" y no "production": Swagger visible, CORS por lista y se permite PUSH_DISABLED.
+      ENV: local
+      PORT: "8080"
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?Falta FIREBASE_PROJECT_ID (usa demo-kumelen con el emulador)}
+      # Con el emulador: firebase-emulator:9099. Vacío con un proyecto real.
+      FIREBASE_AUTH_EMULATOR_HOST: ${FIREBASE_AUTH_EMULATOR_HOST:-}
+      # Ruta DENTRO del contenedor, bajo /secrets (por ejemplo /secrets/firebase.json). Vacío con el emulador.
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+      # true evita enviar notificaciones reales desde un entorno de pruebas.
+      PUSH_DISABLED: ${PUSH_DISABLED:-true}
+      # El CMS se consulta por la red interna, pero las imágenes las carga el navegador desde localhost.
+      ILUVATAR_CMS_HOST: http://cms:1337
+      CMS_PUBLIC_URL: http://localhost:${CMS_PORT:-1337}
+      ILUVATAR_TOKEN_FILE: /shared/iluvatar_token
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:?Falta WEBHOOK_SECRET}
+      CORS_ALLOWED_ORIGINS: http://localhost:${PWA_PORT:-3000}
+      RATE_LIMIT_RPS: ${RATE_LIMIT_RPS:-50}
+    volumes:
+      - shared:/shared:ro
+      - ./secrets:/secrets:ro
+    ports:
+      - "127.0.0.1:${ILUVATAR_PORT:-8080}:8080"
+    # El HEALTHCHECK de la imagen ejecuta `/iluvatar healthcheck`.
+
+  pwa:
+    image: kumelen/manwe-pwa:local
+    build:
+      context: ../apps/manwe-pwa
+      dockerfile: Dockerfile
+      args: &pwa-public
+        # Direcciones que usa el NAVEGADOR (no los nombres internos de Docker).
+        PUBLIC_API_BASE: http://localhost:${ILUVATAR_PORT:-8080}
+        PUBLIC_CMS_BASE: http://localhost:${CMS_PORT:-1337}
+        PUBLIC_AUTH_MODE: ${PUBLIC_AUTH_MODE:-firebase}
+        PUBLIC_FIREBASE_API_KEY: ${PUBLIC_FIREBASE_API_KEY:-}
+        PUBLIC_FIREBASE_AUTH_DOMAIN: ${PUBLIC_FIREBASE_AUTH_DOMAIN:-}
+        PUBLIC_FIREBASE_PROJECT_ID: ${PUBLIC_FIREBASE_PROJECT_ID:-}
+        PUBLIC_FIREBASE_APP_ID: ${PUBLIC_FIREBASE_APP_ID:-}
+        PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-}
+        # Con el emulador: localhost:9099 (la dirección que ve el navegador). Vacío con un proyecto real.
+        PUBLIC_FIREBASE_AUTH_EMULATOR_HOST: ${PUBLIC_FIREBASE_AUTH_EMULATOR_HOST:-}
+    restart: unless-stopped
+    depends_on:
+      iluvatar:
+        condition: service_healthy
+    environment:
+      <<: *pwa-public
+      ORIGIN: http://localhost:${PWA_PORT:-3000}
+    ports:
+      - "127.0.0.1:${PWA_PORT:-3000}:3000"
+
+volumes:
+  pgdata:
+  cms_uploads:
+  shared:

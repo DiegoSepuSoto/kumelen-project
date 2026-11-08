@@ -1,0 +1,29 @@
+@startuml elentari
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include FONTAWESOME/users.puml
+
+Enterprise_Boundary(UTEMBoundary, "UTEM") {
+    System_Boundary(kumelenBoundary, "Sistema Kümelen") {
+        Container_Boundary(elentari, "Backend for Frontend") {
+            Component(service, "Servicio", "Endpoint", "Servicio que devuelve el detalle de un servicio estudiantil")
+            Component(services, "Servicios", "Endpoint", "Servicio que devuelve un listado de servicios estudiantiles")
+            Component(login, "Login", "Endpoint", "Servicio que inicia sesión con credenciales universitarias")
+            Component(catalog, "Catálogo", "Endpoint", "Servicio que construye la información necesaria para la pantalla de catálogo")
+        }
+        
+        Container(manwe, "App Kümelen", "Frontend", "Aplicación móvil con publicaciones creadas por los servicios estudiantiles")
+        Container(aule, "API", "Backend", "Servicio backend que consume y envía información propia del sistema")
+    }
+}
+
+Rel(manwe, elentari, "Recibe y envía información")
+Rel(service, aule, "Recibe detalle de un servicio estudiantil")
+Rel(services, aule, "Recibe listado de servicios estudiantiles")
+Rel(login, aule, "Inicio de sesión institucional")
+Rel(catalog, aule, "Recibe servicios estudiantiles y categorías")
+
+@enduml

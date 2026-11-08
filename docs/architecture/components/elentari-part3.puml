@@ -1,0 +1,33 @@
+@startuml elentari
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include FONTAWESOME/users.puml
+
+System_Boundary(thirdParty, "Herramientas de Terceros") {
+    Container_Ext(firebaseNotifications, "Firebase Notifications", "Google", "Herramienta que permite enviar notificaciones a los usuarios de la App")
+}
+
+Enterprise_Boundary(UTEMBoundary, "UTEM") {
+    System_Boundary(kumelenBoundary, "Sistema Kümelen") {
+        Container_Boundary(elentari, "Backend for Frontend") {
+            Component(notifications, "Notificaciones", "Endpoint", "Servicio que devuelve listado de notificaciones")
+            Component(notification, "Notificación", "Endpoint", "Servicio que devuelve el detalle de una notificación")
+            Component(preferences, "Preferencias", "Endpoint", "Servicio que devuelve las preferencias del usuario")
+            Component(searchResults, "Resultado de búsqueda", "Endpoint", "Servicio que devuelve todas las publicaciones que entran dentro de los criterios de búsqueda")
+        }
+        
+        Container(manwe, "App Kümelen", "Frontend", "Aplicación móvil con publicaciones creadas por los servicios estudiantiles")
+        Container(aule, "API", "Backend", "Servicio backend que consume y envía información propia del sistema")
+    }
+}
+
+Rel(manwe, elentari, "Recibe y envía información")
+Rel(preferences, aule, "Recibe preferencias del usuario")
+Rel(searchResults, aule, "Recibe publicaciones que cumplen con el criterio de búsqueda")
+Rel(notifications, firebaseNotifications, "Recibe Notificaciones")
+Rel(notification, firebaseNotifications, "Recibe detalle de notificación")
+
+@enduml

@@ -1,0 +1,22 @@
+# Secretos y entorno local (nunca versionar valores reales)
+.env
+.env.*
+!.env.example
+!.env.test
+deploy/secrets/*
+!deploy/secrets/README.txt
+
+# Dependencias, builds y datos locales
+node_modules/
+.tmp/
+.svelte-kit/
+build/
+dist/
+**/public/uploads/*
+!**/public/uploads/.gitkeep
+
+# Editor y sistema
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

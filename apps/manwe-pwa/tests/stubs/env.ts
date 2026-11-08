@@ -1,0 +1,9 @@
+export const PUBLIC_API_BASE = 'https://api.test';
+export const PUBLIC_CMS_BASE = 'https://cms.test';
+export const PUBLIC_AUTH_MODE = 'mock';
+export const PUBLIC_FIREBASE_API_KEY = '';
+export const PUBLIC_FIREBASE_AUTH_DOMAIN = '';
+export const PUBLIC_FIREBASE_PROJECT_ID = '';
+export const PUBLIC_FIREBASE_APP_ID = '';
+export const PUBLIC_FIREBASE_MESSAGING_SENDER_ID = '';
+export const PUBLIC_FIREBASE_AUTH_EMULATOR_HOST = '';

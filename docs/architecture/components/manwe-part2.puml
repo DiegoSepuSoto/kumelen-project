@@ -1,0 +1,34 @@
+@startuml manwe
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include FONTAWESOME/users.puml
+
+Person(student, "Estudiante UTEM")
+
+System_Boundary(thirdParty, "Herramientas de Terceros") {
+    Container_Ext(firebaseNotifications, "Firebase Notifications", "Google", "Herramienta que permite enviar notificaciones a los usuarios de la App")
+}
+
+Enterprise_Boundary(UTEMBoundary, "UTEM") {
+    System_Boundary(kumelenBoundary, "Sistema Kümelen") {
+        Container_Boundary(manwe, "App Kümelen") {
+            Component(post, "Publicación", "Pantalla", "Detalle de una publicación de un servicio estudiantil")
+            Component(service, "Servicio Estudiantil", "Pantalla", "Información general de un servicio estudiantil dentro de la App")
+            Component(notification, "Notificación", "Pantalla", "Detalle de una notificación enviada al usuario")
+            Component(preferences, "Preferencias", "Pantalla", "Preferencias de uso de la aplicación definidas por el usuario")
+            Component(profile, "Perfil", "Pantalla", "Información básica del estudiante")
+            Component(searchResults, "Resultados búsqueda", "Pantalla", "Publicaciones que cumplen con un criterio de búsqueda")
+        }
+        
+        Container(elentari, "Backend for Frontend", "Backend", "Servicio backend que construye el contenido de la App")
+    }
+}
+
+Rel(student, manwe, "Recibe Publicaciones")
+Rel(manwe, elentari, "Recibe y envía información")
+Rel(manwe, firebaseNotifications, "Recibe Notificaciones")
+
+@enduml

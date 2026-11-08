@@ -1,0 +1,44 @@
+@startuml kumelen_container_mvp
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include FONTAWESOME/users.puml
+!include DEVICONS/javascript.puml
+!include DEVICONS/java.puml
+!include DEVICONS/go.puml
+!include DEVICONS/mongodb.puml
+!include DEVICONS/postgresql.puml
+
+Person(student, "Estudiante UTEM")
+Person(serviceCollaborator, "Colaborador", "Servicios Estudiantiles UTEM")
+
+Enterprise_Boundary(UTEMBoundary, "UTEM") {
+    System_Boundary(b1, "Sistema Kümelen") {
+        Container(iluvatarCMS, "Generación de Publicaciones", "Strapi CMS", "El sitio web que permitirá a los servicios estudiantiles subir contenido al sistema", $sprite="javascript")
+        Container(manwe, "App Kümelen", "Flutter", "Aplicación móvil con publicaciones creadas por los servicios estudiantiles")
+        Container(elentari, "Backend for Frontend", "Go", "Servicio backend que construye el contenido de la App", $sprite="go")
+        Container(iluvatar, "API", "Go", "Servicio backend para manejar información de usuario", $sprite="go")
+
+        ContainerDb(ainulindaleCMS, "Publicaciones", "MongoDB", "Almacena información de contenido del proyecto", $sprite="mongodb")
+        ContainerDb(ainulindale, "Preferencias", "MongoDB", "Almacena información de estudiantes y sus preferencias de contenido", $sprite="postgresql")
+    }
+
+    Container(miUTEMAPI, "Mi UTEM API", "Club exDev UTEM", "Herramienta web que permite iniciar sesión de estudiantes y obtener información de los mismos")
+}
+
+Container(firebaseNotifications, "Firebase Notifications", "Google", "Herramienta que permite enviar notificaciones a los usuarios de la App")
+
+Rel_R(serviceCollaborator, iluvatarCMS, "Crea/Actualiza Publicaciones")
+Rel_R(student, manwe, "Recibe Publicaciones")
+Rel(manwe, elentari, "Consume", "https/443")
+Rel(elentari, iluvatarCMS, "Consume", "https/443")
+Rel(elentari, iluvatar, "Consume", "https/443")
+Rel(iluvatar, miUTEMAPI, "Solicita", "https/443")
+Rel(iluvatar, ainulindale, "Almacena", "https/443")
+Rel(iluvatarCMS, ainulindaleCMS, "Almacena", "tcp")
+Rel_R(iluvatarCMS, ainulindaleCMS, "Consume", "tcp")
+Rel_R(iluvatar, firebaseNotifications, "Genera notificaciones")
+Rel(manwe, firebaseNotifications, "Recibe Notificaciones", "https/443")
+
+@enduml

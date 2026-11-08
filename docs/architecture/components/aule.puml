@@ -1,0 +1,39 @@
+@startuml aule
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include FONTAWESOME/users.puml
+
+Enterprise_Boundary(UTEMBoundary, "UTEM") {
+    System_Boundary(kumelenBoundary, "Sistema Kümelen") {
+        Container_Boundary(aule, "API") {
+            Component(post, "Publicación", "Endpoint", "Servicio que devuelve el detalle de una publicación")
+            Component(postsByService, "Publicaciones", "Endpoint", "Servicio que devuelve un listado de publicaciones de un servicio estudiantil")
+            Component(postsByCategory, "Publicaciones", "Endpoint", "Servicio que devuelve un listado de publicaciones de una categoria")
+            Component(service, "Servicio", "Endpoint", "Servicio que devuelve el detalle de un servicio estudiantil")
+            Component(services, "Servicios", "Endpoint", "Servicio que devuelve un listado de servicios estudiantiles")
+            Component(login, "Login", "Endpoint", "Servicio que inicia sesión con credenciales universitarias")
+            Component(preferences, "Preferencias", "Endpoint", "Servicio que devuelve las preferencias del usuario")
+            Component(searchResults, "Resultado de búsqueda", "Endpoint", "Servicio que devuelve todas las publicaciones que entran dentro de los criterios de búsqueda")
+        }
+        
+        Container(elentari, "Backend for Frontend", "Backend", "Servicio backend que construye el contenido de la App")
+        ContainerDb(ainulindale, "Base de Datos de Preferencias", "MongoDB", "Almacena las preferencias de contenido de los estudiantes")
+    }
+
+    ContainerDb(estudiantesDB, "Base de Datos: Estudiantes", "UTEM", "Repositorio de información de estudiantes UTEM")
+}
+
+Rel(elentari, aule, "Recibe información")
+Rel(post, ainulindale, "Recibe detalle de una publicación")
+Rel(postsByService, ainulindale, "Recibe listado de publicaciones")
+Rel(postsByCategory, ainulindale, "Recibe listado de publicaciones")
+Rel(service, ainulindale, "Recibe detalle de un servicio estudiantil")
+Rel(services, ainulindale, "Recibe listado de servicios estudiantiles")
+Rel(login, estudiantesDB, "Inicio de sesión institucional")
+Rel(preferences, ainulindale, "Recibe preferencias del usuario")
+Rel(searchResults, ainulindale, "Recibe publicaciones que cumplen con el criterio de búsqueda")
+
+@enduml

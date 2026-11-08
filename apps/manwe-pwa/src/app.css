@@ -1,0 +1,163 @@
+/*
+ * Tokens de diseño copiados de manwe (lib/src/ui/utils/constants.dart y ManweApp).
+ * Para cambiar la paleta basta con editar estas variables.
+ */
+@font-face {
+	font-family: 'Nunito';
+	font-weight: 300;
+	font-display: swap;
+	src: url('/fonts/Nunito-Light.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'Nunito';
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/Nunito-Regular.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'Nunito';
+	font-weight: 600;
+	font-display: swap;
+	src: url('/fonts/Nunito-SemiBold.ttf') format('truetype');
+}
+@font-face {
+	font-family: 'Nunito';
+	font-weight: 700;
+	font-display: swap;
+	src: url('/fonts/Nunito-Bold.ttf') format('truetype');
+}
+
+:root {
+	--primary: #459951;
+	--secondary: #00417c;
+	--text: #3c4046;
+	--bg: #f1f5f0;
+	--white: #ffffff;
+	--danger: #ff5252;
+	--warning: #ffab40;
+	--error: #f44336;
+	--shadow: rgb(60 64 70 / 0.5);
+	--pad: 20px;
+
+	/* La app se muestra como una columna móvil, también en pantallas grandes. */
+	--app-max: 480px;
+	/* Equivale a size.height / 100 y size.width / 100 de Flutter; el tope evita alturas absurdas en escritorio. */
+	--vu: min(1dvh, 8px);
+	--wu: calc(min(100vw, var(--app-max)) / 100);
+
+	--safe-top: env(safe-area-inset-top, 0px);
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: #dfe6de;
+	color: var(--text);
+	font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	font-size: 16px;
+	line-height: 1.25;
+	-webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+	margin: 0;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+}
+
+img {
+	display: block;
+	max-width: 100%;
+}
+
+ul,
+ol {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+:focus-visible {
+	outline: 3px solid var(--secondary);
+	outline-offset: 2px;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Botón elevado de Material (ElevatedButton) en verde primario. */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 36px;
+	padding: 8px 16px;
+	border: 0;
+	border-radius: 4px;
+	background: var(--primary);
+	color: var(--white);
+	font-weight: 700;
+	font-size: 14px;
+	letter-spacing: 0.4px;
+	cursor: pointer;
+	box-shadow:
+		0 2px 4px -1px rgb(0 0 0 / 0.2),
+		0 4px 5px 0 rgb(0 0 0 / 0.14),
+		0 1px 10px 0 rgb(0 0 0 / 0.12);
+}
+.btn:active {
+	box-shadow: 0 5px 5px -3px rgb(0 0 0 / 0.2), 0 8px 10px 1px rgb(0 0 0 / 0.14);
+}
+.btn:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+/* Sombra de las tarjetas: BoxShadow(kTextColor 50%, blur 3, offset 3,3). */
+.card-shadow {
+	border-radius: 20px;
+	box-shadow: 3px 3px 3px var(--shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

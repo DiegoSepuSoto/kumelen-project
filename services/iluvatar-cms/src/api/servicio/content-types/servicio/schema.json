@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "servicios",
+  "info": {
+    "singularName": "servicio",
+    "pluralName": "servicios",
+    "displayName": "Servicio"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "Descripcion": {
+      "type": "richtext",
+      "required": true
+    },
+    "Logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ],
+      "required": true
+    },
+    "Sigla": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "posts": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::post.post",
+      "mappedBy": "servicio"
+    },
+    "personas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::persona.persona",
+      "mappedBy": "servicio"
+    },
+    "contactos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::contacto.contacto",
+      "mappedBy": "servicio"
+    },
+    "avisos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::aviso.aviso",
+      "mappedBy": "servicio"
+    }
+  }
+}

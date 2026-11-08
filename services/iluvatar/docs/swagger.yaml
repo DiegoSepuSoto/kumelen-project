@@ -1,0 +1,565 @@
+definitions:
+  models.CatalogPage:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/models.Category'
+        type: array
+      services:
+        items:
+          $ref: '#/definitions/models.Service'
+        type: array
+    type: object
+  models.Category:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.CategoryPostsPage:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      posts_for_preview:
+        items:
+          $ref: '#/definitions/models.PostForPreview'
+        type: array
+    type: object
+  models.Contact:
+    properties:
+      id:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  models.HomePage:
+    properties:
+      services_with_posts:
+        items:
+          $ref: '#/definitions/models.ServiceWithPosts'
+        type: array
+    type: object
+  models.Notification:
+    properties:
+      body:
+        type: string
+      id:
+        type: string
+      service_image_url:
+        type: string
+      service_name:
+        type: string
+      title:
+        type: string
+    type: object
+  models.NotificationsPage:
+    properties:
+      notifications:
+        items:
+          $ref: '#/definitions/models.Notification'
+        type: array
+    type: object
+  models.Person:
+    properties:
+      charge:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      profile_picture_url:
+        type: string
+    type: object
+  models.PostCategory:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.PostForPreview:
+    properties:
+      id:
+        type: string
+      image_url:
+        type: string
+      summary:
+        type: string
+      title:
+        type: string
+    type: object
+  models.PostPage:
+    properties:
+      body:
+        type: string
+      categories:
+        items:
+          $ref: '#/definitions/models.PostCategory'
+        type: array
+      id:
+        type: string
+      image:
+        type: string
+      service_id:
+        type: string
+      service_name:
+        type: string
+      title:
+        type: string
+    type: object
+  models.PostSearchResult:
+    properties:
+      posts:
+        items:
+          $ref: '#/definitions/models.PostForPreview'
+        type: array
+    type: object
+  models.Service:
+    properties:
+      id:
+        type: string
+      logo_url:
+        type: string
+      name:
+        type: string
+    type: object
+  models.ServicePage:
+    properties:
+      contacts:
+        items:
+          $ref: '#/definitions/models.Contact'
+        type: array
+      description:
+        type: string
+      id:
+        type: string
+      logo_url:
+        type: string
+      name:
+        type: string
+      persons:
+        items:
+          $ref: '#/definitions/models.Person'
+        type: array
+    type: object
+  models.ServicePostsPage:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      posts_for_preview:
+        items:
+          $ref: '#/definitions/models.PostForPreview'
+        type: array
+    type: object
+  models.ServiceWithPosts:
+    properties:
+      abbreviation:
+        type: string
+      id:
+        type: string
+      posts_for_preview:
+        items:
+          $ref: '#/definitions/models.PostForPreview'
+        type: array
+    type: object
+  push.subscriptionRequest:
+    properties:
+      device_token:
+        type: string
+      topics:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - device_token
+    - topics
+    type: object
+info:
+  contact:
+    email: diego.sepulvedas@utem.cl
+    name: Diego Sepúlveda
+  description: En esta documentación se encuentran los detalles de los endpoints presentes
+    en el artefacto API del proyecto Kümelen
+  title: Documentación Artefacto API
+  version: "1.0"
+paths:
+  /v1/catalog:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve el contenido a mostrar en la pantalla de catélogo
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CatalogPage'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Pantalla de Catálogo
+      tags:
+      - BFF V1 - Catálogo
+  /v1/category/{id}/posts:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve todas las publicaciones que presentan la categoría enviada
+        por parámetro
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      - description: "123456"
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CategoryPostsPage'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Publicaciones de una categoría
+      tags:
+      - BFF V1 - Categorías
+  /v1/home:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve el contenido a mostrar en la pantalla de inicio de la
+        aplicación
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HomePage'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Pantalla de Inicio
+      tags:
+      - BFF V1 - Pantalla Principal
+  /v1/notification:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve el contenido a mostrar en la pantalla de notificaciones
+        de la aplicación
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.NotificationsPage'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Pantalla de Notificaciones
+      tags:
+      - BFF V1 - Pantalla de Notificaciones
+  /v1/post/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve el detalle de una publicación pora ser mostrado en la
+        aplicación
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      - description: "123456"
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostPage'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Pantalla de Publicación
+      tags:
+      - BFF V1 - Publicaciones
+  /v1/post/search/{searchTerm}:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve todas las publicaciones que cumplen con el término de
+        búsqueda
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      - description: bienestar
+        in: path
+        name: searchTerm
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostSearchResult'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Resultados de Búsqueda
+      tags:
+      - BFF V1 - Publicaciones
+  /v1/push/subscribe:
+    post:
+      consumes:
+      - application/json
+      description: Suscribe el token de un dispositivo a los topics indicados ("all"
+        o "service.<id del servicio>")
+      parameters:
+      - description: Bearer <ID token de Firebase>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Token del dispositivo y topics
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/push.subscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: BadRequest
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Suscripción a notificaciones
+      tags:
+      - API V1 - Notificaciones push
+  /v1/push/unsubscribe:
+    post:
+      consumes:
+      - application/json
+      description: Quita al dispositivo de los topics indicados
+      parameters:
+      - description: Bearer <ID token de Firebase>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Token del dispositivo y topics
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/push.subscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: BadRequest
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Baja de notificaciones
+      tags:
+      - API V1 - Notificaciones push
+  /v1/service/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve el detalle de un servicio estudiantil para visualizarlo
+        en la aplicación
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      - description: "123456"
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ServicePage'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Pantalla de Servicio
+      tags:
+      - BFF V1 - Servicios Estudiantiles
+  /v1/service/{id}/posts:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve todas las publicaciones creadas por un servicio estudiantil
+        especificado
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Token-Autorización
+        required: true
+        type: string
+      - description: "123456"
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ServicePostsPage'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: BadGateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Publicaciones de un Servicio
+      tags:
+      - BFF V1 - Servicios Estudiantiles
+swagger: "2.0"

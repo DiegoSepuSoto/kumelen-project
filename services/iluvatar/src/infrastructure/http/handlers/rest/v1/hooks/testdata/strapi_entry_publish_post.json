@@ -1,0 +1,49 @@
+{
+  "event": "entry.publish",
+  "createdAt": "2026-11-08T01:36:05.007Z",
+  "model": "post",
+  "uid": "api::post.post",
+  "entry": {
+    "id": 16,
+    "documentId": "rxxyxbq7z7pdefevbm95sllf",
+    "Titulo": "Prueba de webhook 1794101764994",
+    "Resumen": "Resumen para webhook",
+    "Cuerpo": "Cuerpo",
+    "createdAt": "2026-11-08T01:36:04.997Z",
+    "updatedAt": "2026-11-08T01:36:04.997Z",
+    "publishedAt": "2026-11-08T01:36:05.001Z",
+    "Imagen": {
+      "id": 1,
+      "documentId": "k734kmfyt6yzaaqhp1kupm7w",
+      "name": "logo-pae",
+      "alternativeText": "logo-pae",
+      "caption": null,
+      "focalPoint": null,
+      "width": 1,
+      "height": 1,
+      "formats": null,
+      "hash": "logo_pae_2202f89f53",
+      "ext": ".png",
+      "mime": "image/png",
+      "size": 0.12,
+      "url": "/uploads/logo_pae_2202f89f53.png",
+      "previewUrl": null,
+      "provider": "local",
+      "provider_metadata": null,
+      "createdAt": "2026-11-08T01:31:42.535Z",
+      "updatedAt": "2026-11-08T01:31:42.535Z",
+      "publishedAt": "2026-11-08T01:31:42.536Z"
+    },
+    "categorias": [],
+    "servicio": {
+      "id": 2,
+      "documentId": "epc4gw4lp0czni7ri325yp1e",
+      "Nombre": "Plan de Apoyo Estudiantil",
+      "Descripcion": "Acompaña a los estudiantes en su **formación integral**.",
+      "Sigla": "PAE",
+      "createdAt": "2026-11-08T01:31:42.543Z",
+      "updatedAt": "2026-11-08T01:31:42.543Z",
+      "publishedAt": "2026-11-08T01:31:42.546Z"
+    }
+  }
+}
