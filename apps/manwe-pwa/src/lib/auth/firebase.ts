@@ -16,7 +16,7 @@ export interface FirebaseAuthOptions {
  * penalizar el peso inicial de la app.
  *
  * Con `emulatorHost` definido se conecta al emulador de Auth antes de usarlo. El emulador no pide una
- * clave ni un proyecto reales, así que se completan con valores de relleno si faltan; con el
+ * clave, proyecto ni dominio reales, así que se completan con valores de relleno si faltan; con el
  * emulador vacío la configuración se usa tal cual.
  */
 export function createFirebaseAuth({
@@ -30,7 +30,13 @@ export function createFirebaseAuth({
 		]);
 
 		const appConfig = emulatorHost
-			? { ...config, apiKey: config.apiKey || 'demo-api-key', projectId: config.projectId || 'demo-kumelen' }
+			? {
+					...config,
+					apiKey: config.apiKey || 'demo-api-key',
+					projectId: config.projectId || 'demo-kumelen',
+					// El SDK exige un authDomain para abrir el popup, aunque con el emulador no se use.
+					authDomain: config.authDomain || 'localhost'
+				}
 			: config;
 		const app = getApps()[0] ?? initializeApp(appConfig);
 		const instance = auth.getAuth(app);

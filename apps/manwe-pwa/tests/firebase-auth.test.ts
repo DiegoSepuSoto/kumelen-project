@@ -78,21 +78,21 @@ describe('createFirebaseAuth y el emulador', () => {
 		expect(order).toEqual(['connect', 'listen']);
 	});
 
-	it('con el emulador completa la clave y el proyecto si faltan, y respeta los que vienen', async () => {
-		await load({ config: { ...realConfig, apiKey: '', projectId: '' }, emulatorHost: 'localhost:9099' });
+	it('con el emulador completa la clave, el proyecto y el dominio si faltan, y respeta los que vienen', async () => {
+		await load({ config: { ...realConfig, apiKey: '', projectId: '', authDomain: '' }, emulatorHost: 'localhost:9099' });
 		expect(initializeApp).toHaveBeenLastCalledWith(
-			expect.objectContaining({ apiKey: 'demo-api-key', projectId: 'demo-kumelen' })
+			expect.objectContaining({ apiKey: 'demo-api-key', projectId: 'demo-kumelen', authDomain: 'localhost' })
 		);
 
 		initializeApp.mockClear();
-		await load({ config: { ...realConfig, apiKey: 'mi-clave', projectId: 'demo-otro' }, emulatorHost: 'localhost:9099' });
+		await load({ config: { ...realConfig, apiKey: 'mi-clave', projectId: 'demo-otro', authDomain: 'otro.local' }, emulatorHost: 'localhost:9099' });
 		expect(initializeApp).toHaveBeenLastCalledWith(
-			expect.objectContaining({ apiKey: 'mi-clave', projectId: 'demo-otro' })
+			expect.objectContaining({ apiKey: 'mi-clave', projectId: 'demo-otro', authDomain: 'otro.local' })
 		);
 	});
 
 	it('sin emulador no inventa valores para una configuración vacía', async () => {
-		const empty = { ...realConfig, apiKey: '', projectId: '' };
+		const empty = { ...realConfig, apiKey: '', projectId: '', authDomain: '' };
 
 		await load({ config: empty, emulatorHost: '' });
 
