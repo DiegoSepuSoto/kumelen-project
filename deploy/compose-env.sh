@@ -13,13 +13,7 @@ random() { openssl rand -base64 24 | tr -d '\n'; }
 
 cat > "$destination" <<ENV
 # Generado por compose-env.sh. No lo versiones: contiene secretos.
-POSTGRES_PASSWORD=$(random | tr -d '/+=')
-APP_KEYS=$(random),$(random),$(random),$(random)
-API_TOKEN_SALT=$(random)
-ADMIN_JWT_SECRET=$(random)
-TRANSFER_TOKEN_SALT=$(random)
-JWT_SECRET=$(random)
-ENCRYPTION_KEY=$(random)
+# Secreto del webhook que el CMS (que corre aparte: make cms-env) usa para avisar a iluvatar.
 WEBHOOK_SECRET=$(random)
 LAURELIN_DB_PASSWORD=$(random | tr -d '/+=')
 LAURELIN_SERVICE_TOKEN=$(random | tr -d '/+=')

@@ -9,6 +9,7 @@ deploy/secrets/*
 # Dependencias, builds y datos locales
 node_modules/
 .tmp/
+.archify/
 .svelte-kit/
 build/
 dist/

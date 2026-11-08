@@ -1,4 +1,6 @@
-# Kümelen completo para desarrollo y pruebas locales: base de datos, CMS, API/BFF, Laurelin (registro de estudiantes) y PWA.
+# Kümelen para desarrollo y pruebas locales: API/BFF, Laurelin (registro de estudiantes con su base) y PWA.
+# El CMS (Strapi) NO está aquí: pide mucha memoria al construirse, así que se ejecuta aparte, en el equipo
+# (make cms-dev). iluvatar lo consulta en http://host.docker.internal:1337.
 # NO es una configuración de producción (puertos abiertos en localhost, datos de prueba, sin TLS).
 # Guía y requisitos: COMPOSE.md.
 #
@@ -7,41 +9,7 @@
 #   docker compose --profile emulator up --build   # con el emulador de Firebase Auth (sin proyecto real)
 name: kumelen
 
-x-cms-database: &cms-database
-  DATABASE_CLIENT: postgres
-  DATABASE_HOST: postgres
-  DATABASE_PORT: "5432"
-  DATABASE_NAME: kumelen
-  DATABASE_USERNAME: kumelen
-  DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD, ejecuta ./compose-env.sh}
-
-x-cms-secrets: &cms-secrets
-  APP_KEYS: ${APP_KEYS:?Falta APP_KEYS, ejecuta ./compose-env.sh}
-  API_TOKEN_SALT: ${API_TOKEN_SALT:?Falta API_TOKEN_SALT}
-  ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:?Falta ADMIN_JWT_SECRET}
-  TRANSFER_TOKEN_SALT: ${TRANSFER_TOKEN_SALT:?Falta TRANSFER_TOKEN_SALT}
-  JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET}
-  ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Falta ENCRYPTION_KEY}
-  WEBHOOK_SECRET: ${WEBHOOK_SECRET:?Falta WEBHOOK_SECRET}
-  # Strapi avisa a iluvatar cada vez que se publica contenido.
-  ILUVATAR_WEBHOOK_URL: http://iluvatar:8080/v1/hooks/post
-
 services:
-  postgres:
-    image: docker.io/library/postgres:17
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: kumelen
-      POSTGRES_USER: kumelen
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD, ejecuta ./compose-env.sh}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kumelen -d kumelen"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   # Base de datos propia de Laurelin: dos servicios, dos bases, como en producción.
   laurelin-db:
     image: docker.io/library/postgres:17
@@ -57,47 +25,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-
-  cms:
-    image: kumelen/iluvatar-cms:local
-    build:
-      context: ../services/iluvatar-cms
-      args:
-        # Vacío = valor de Strapi (cookies seguras). Ver COMPOSE.md si el panel no deja iniciar sesión por HTTP.
-        ADMIN_COOKIE_SECURE: ${ADMIN_COOKIE_SECURE:-}
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      <<: [*cms-database, *cms-secrets]
-      NODE_ENV: production
-      PUBLIC_URL: http://localhost:${CMS_PORT:-1337}
-      ADMIN_COOKIE_SECURE: ${ADMIN_COOKIE_SECURE:-}
-    volumes:
-      - cms_uploads:/app/public/uploads
-    ports:
-      - "127.0.0.1:${CMS_PORT:-1337}:1337"
-    # El HEALTHCHECK de la imagen consulta /_health.
-
-  # Carga datos de prueba y deja el API token de solo lectura en el volumen compartido para iluvatar.
-  # Es idempotente: si ya hay datos y el token existe, no cambia nada.
-  cms-seed:
-    image: kumelen/iluvatar-cms:local
-    pull_policy: never
-    depends_on:
-      cms:
-        condition: service_healthy
-    restart: "no"
-    command: ["node", "scripts/seed.js"]
-    environment:
-      <<: [*cms-database, *cms-secrets]
-      # El seed se niega a correr con NODE_ENV=production a propósito: solo existe para desarrollo.
-      NODE_ENV: development
-      SEED_TOKEN_FILE: /shared/iluvatar_token
-    volumes:
-      - cms_uploads:/app/public/uploads
-      - shared:/shared
 
   # Solo con --profile emulator: reemplaza a Firebase Auth para probar la API sin un proyecto real.
   # El emulador no firma los tokens: solo sirve para desarrollo.
@@ -123,10 +50,6 @@ services:
       context: ../services/iluvatar
     restart: unless-stopped
     depends_on:
-      cms:
-        condition: service_healthy
-      cms-seed:
-        condition: service_completed_successfully
       laurelin:
         condition: service_healthy
     environment:
@@ -140,10 +63,12 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
       # true evita enviar notificaciones reales desde un entorno de pruebas.
       PUSH_DISABLED: ${PUSH_DISABLED:-true}
-      # El CMS se consulta por la red interna, pero las imágenes las carga el navegador desde localhost.
-      ILUVATAR_CMS_HOST: http://cms:1337
+      # El CMS corre en el equipo (make cms-dev): desde el contenedor se llega por host.docker.internal,
+      # pero las imágenes las carga el navegador desde localhost.
+      ILUVATAR_CMS_HOST: ${CMS_URL:-http://host.docker.internal:1337}
       CMS_PUBLIC_URL: http://localhost:${CMS_PORT:-1337}
-      ILUVATAR_TOKEN_FILE: /shared/iluvatar_token
+      # API token de solo lectura del CMS: lo deja `make cms-seed` en ./secrets/cms_token.
+      ILUVATAR_TOKEN_FILE: /secrets/cms_token
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:?Falta WEBHOOK_SECRET}
       # Verificación de estudiantes con Laurelin. Vacía = desactivada (entra cualquier cuenta de Firebase válida).
       # Para activarla: ILUVATAR_LAURELIN_URL=http://laurelin:8090 en .env (ver COMPOSE.md).
@@ -152,7 +77,6 @@ services:
       CORS_ALLOWED_ORIGINS: http://localhost:${PWA_PORT:-3000}
       RATE_LIMIT_RPS: ${RATE_LIMIT_RPS:-50}
     volumes:
-      - shared:/shared:ro
       - ./secrets:/secrets:ro
     ports:
       - "127.0.0.1:${ILUVATAR_PORT:-8080}:8080"
@@ -214,7 +138,4 @@ services:
       - "127.0.0.1:${PWA_PORT:-3000}:3000"
 
 volumes:
-  pgdata:
   laurelin_pgdata:
-  cms_uploads:
-  shared:
