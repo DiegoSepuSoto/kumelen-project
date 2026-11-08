@@ -262,6 +262,23 @@ Pendiente: notificaciones push (falta el proyecto de Firebase y el endpoint `POS
 4. ¿Laurelin y Kümelen se comunican por API entre servicios o por reclamos (claims) en los tokens de Firebase?
 5. Stack y hosting: ¿mismo de Kümelen?
 
+### Decisiones tomadas y estado (nov 2026)
+
+Respuestas a las decisiones abiertas 1 a 5:
+1. **Quién carga los datos:** administradores autenticados con Firebase, con dos roles (`super_admin` central e `institution_admin` por institución). Los estudiantes no editan nada.
+2. **Multi-institución desde el inicio:** sí (instituciones → programas → estudiantes; cada administrador solo ve su institución).
+3. **Identificador:** correo institucional, **sin RUT**. La condición de estudiante se verifica por coincidencia del correo (ver 4).
+4. **Integración con Kümelen:** API entre servicios (`POST /internal/v1/students/lookup` con un token de servicio), no claims en los tokens de Firebase.
+5. **Stack:** el mismo de Kümelen (Go 1.27, Echo, PostgreSQL, Firebase Auth, contenedor distroless).
+
+**Estado:** `services/laurelin` está construido y probado (rama `feat/laurelin`, sin push): casos de uso, rutas `/v1`, lookup interno, auditoría, migraciones, imagen de contenedor. Detalle en `services/laurelin/CLAUDE.md`.
+
+**Pendiente de Laurelin:**
+- Que `iluvatar` consulte a Laurelin al iniciar sesión o al suscribirse, y decidir qué hace con una cuenta de Firebase cuyo correo no es de un estudiante activo (hoy cualquier cuenta de Firebase entra; ver D5 sobre la restricción de dominio).
+- Interfaz de administración (sin ella solo hay API), carga masiva por CSV y lectura de la auditoría.
+- Entrada en `deploy/compose.yaml` y verificación con un proyecto real de Firebase.
+- Revisión legal (Ley 19.628 y 21.719): qué se guarda, por cuánto tiempo y cómo se atienden los derechos de acceso, rectificación y supresión (hoy un administrador puede borrar un registro, pero no hay un procedimiento).
+
 ## Orden y dependencias
 
 ```

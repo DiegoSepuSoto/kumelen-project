@@ -7,6 +7,7 @@ App para que los servicios estudiantiles de la UTEM publiquen contenido y notifi
 | Carpeta | Rol | Stack |
 |---|---|---|
 | `services/iluvatar` | API + BFF: verifica ID tokens de Firebase, sirve las pantallas, suscribe dispositivos y envía push | Go 1.27, Echo, Firebase Admin SDK |
+| `services/laurelin` | Registro de estudiantes chilenos (pregrado y postgrado, varias instituciones); responde si un correo es de un estudiante activo | Go 1.27, Echo, PostgreSQL |
 | `services/iluvatar-cms` | CMS headless para los servicios estudiantiles | Strapi 5, Node 22 a 26, SQLite (dev) / PostgreSQL (prod) |
 | `apps/manwe-pwa` | App de los estudiantes (reemplaza a la app Flutter) | SvelteKit, PWA |
 | `deploy` | `compose.yaml` local, `compose-env.sh`, config del emulador de Firebase | Docker Compose |
@@ -25,6 +26,8 @@ cliente --Firebase Auth--> ID token
 cliente --REST + Bearer ID token--> iluvatar --REST + API token--> iluvatar-cms
 iluvatar-cms --webhook entry.publish (X-Webhook-Secret)--> iluvatar --FCM v1 (topics)--> dispositivos
 cliente --POST /v1/push/subscribe--> iluvatar --> FCM (suscribe el token a los topics)
+iluvatar --POST /internal/v1/students/lookup (token de servicio)--> laurelin   [pendiente: iluvatar aún no lo llama]
+administradores --Firebase Auth + /v1/*--> laurelin
 ```
 
 ## Estado (nov 2026)
@@ -32,6 +35,7 @@ cliente --POST /v1/push/subscribe--> iluvatar --> FCM (suscribe el token a los t
 - Fases 0 a 4 del plan hechas; el monorepo tiene un solo commit inicial en `main`, sin push. Cada repo tiene sus comandos y límites en su propio `CLAUDE.md`.
 - Verificado en local: PostgreSQL 17 en el CMS, imágenes de contenedor de ambos servicios (Podman), caché ante caída del CMS, CORS, rate limit y logs.
 - No verificado: el envío FCM y la verificación de firma de tokens contra un proyecto de Firebase real; la carga en un entorno real; no hay CI todavía.
+- Laurelin (`services/laurelin`) tiene el servicio hecho y probado (casos de uso, HTTP, PostgreSQL real, emulador de Auth, imagen), en la rama `feat/laurelin`; falta la integración con `iluvatar`, una interfaz de administración y la entrada en el compose.
 - Pendiente de decisión: hosting, dominio y TLS; almacenamiento de imágenes del CMS; PostgreSQL gestionado con respaldos.
 - Toolchain local: Go 1.27, Node 24 vía nvm (el Node por defecto es 16 y no sirve para Strapi 5 ni para firebase-tools) y Podman (`/opt/podman/bin`; su máquina virtual puede estar detenida: `podman machine start`).
 - Los secretos van por variables de entorno; nunca escribir valores reales en archivos versionados.
